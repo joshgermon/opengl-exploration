@@ -1,5 +1,6 @@
 #include "../include/glad/glad.h"
 #include <GLFW/glfw3.h>
+#include <math.h>
 #include <stdio.h>
 
 const char *vertexShaderSource =
@@ -13,9 +14,10 @@ const char *vertexShaderSource =
 const char *fragmentShaderSource =
     "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform vec4 ourColor;;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "   FragColor = ourColor;\n"
     "}\n\0";
 
 /* Callback to resize viewport on window resize */
@@ -156,7 +158,12 @@ int main(void) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     /* Draw */
+    float timeValue = glfwGetTime();
+    float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+
     glUseProgram(shaderProgram);
+    glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
