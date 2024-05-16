@@ -20,6 +20,11 @@ int main(void) {
   if (!glfwInit())
     return -1;
 
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
   /* Create a windowed mode window and its OpenGL context */
   window = glfwCreateWindow(800, 600, "Hello World", NULL, NULL);
   if (!window) {
@@ -36,7 +41,10 @@ int main(void) {
   }
 
   /* Set viewport and register resize callback */
-  glViewport(0, 0, 800, 600);
+  int width, height;
+  glfwGetFramebufferSize(window, &width, &height);
+  glViewport(0, 0, width, height);
+  // glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   /* Create shader */

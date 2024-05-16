@@ -5,7 +5,7 @@ project(OpenGLExploration)
 find_package(glfw3 3.4 REQUIRED)
 
 # Add your source files
-set(SOURCES src/glad.c src/shader.c src/rectangle.c)
+set(SOURCES src/glad.c src/shader.c src/stb_image.c src/textures.c)
 
 # Include directory
 include_directories(include)
