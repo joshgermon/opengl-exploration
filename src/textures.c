@@ -2,6 +2,7 @@
 #include "shader.h"
 #include "stb_image.h"
 #include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
 #include <stdio.h>
 
 /* Callback to resize viewport on window resize */
@@ -172,16 +173,20 @@ int main(void) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     /* Draw */
-    useShader(shader);
-
-    glBindVertexArray(VAO);
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture1);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture2);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EAO);
+    mat4 trans = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(trans, (vec3){0.5f, -0.5f, 0.0f});
+    glm_rotate(trans, (float)glfwGetTime(), (vec3){0.0f, 0.0f, 1.0f});
+
+    useShader(shader);
+    unsigned int transformLoc = glGetUniformLocation(shader, "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, (float *)trans);
+
+    glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
