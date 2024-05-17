@@ -5,7 +5,12 @@ project(OpenGLExploration)
 find_package(glfw3 3.4 REQUIRED)
 
 # Add your source files
-set(SOURCES src/glad.c src/shader.c src/stb_image.c src/textures.c)
+set(SOURCES
+    src/glad.c
+    src/shader.c
+    src/stb_image.c
+    src/textures.c
+)
 
 # Include directory
 include_directories(include)
@@ -15,4 +20,7 @@ add_executable(MyGLApp ${SOURCES})
 
 # Link GLFW
 target_link_libraries(MyGLApp PRIVATE glfw)
+
+# Link math library (libm)
+target_link_libraries(MyGLApp PRIVATE m)
 
