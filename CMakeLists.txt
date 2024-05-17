@@ -32,7 +32,12 @@ endif()
 find_package(glfw3 3.4 REQUIRED)
 
 # Add your source files
-set(SOURCES src/glad.c src/shader.c src/stb_image.c src/textures.c)
+set(SOURCES
+    src/glad.c
+    src/shader.c
+    src/stb_image.c
+    src/textures.c
+)
 
 # Include directories
 include_directories(include ${cglm_SOURCE_DIR}/include)
@@ -42,4 +47,7 @@ add_executable(MyGLApp ${SOURCES})
 
 # Link libraries
 target_link_libraries(MyGLApp PRIVATE glfw cglm)
+
+# Link math library (libm)
+target_link_libraries(MyGLApp PRIVATE m)
 
