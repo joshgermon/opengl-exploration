@@ -3,3 +3,4 @@ build/CMakeCache.txt
 build/Makefile
 build
 .DS_Store
+.cache/clangd/index
