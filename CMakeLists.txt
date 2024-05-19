@@ -36,7 +36,7 @@ set(SOURCES
     src/glad.c
     src/shader.c
     src/stb_image.c
-    src/textures.c
+    src/threed.c
 )
 
 # Include directories

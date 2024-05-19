@@ -1,4 +1,5 @@
 #include "../include/glad/glad.h"
+#include "cglm/cam.h"
 #include "shader.h"
 #include "stb_image.h"
 #include <GLFW/glfw3.h>
@@ -49,7 +50,6 @@ int main(void) {
   int width, height;
   glfwGetFramebufferSize(window, &width, &height);
   glViewport(0, 0, width, height);
-  // glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   /* Create shader */
@@ -57,11 +57,11 @@ int main(void) {
 
   /* ** VERTEX DATA  ** */
   float vertices[] = {
-      // positions          // colors           // texture coords
-      0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-      -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
+      // positions        // texture coords
+      0.5f,  0.5f,  0.0f, 1.0f, 1.0f, // top right
+      0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+      -0.5f, 0.5f,  0.0f, 0.0f, 1.0f  // top left
   };
   unsigned int indices[] = {
       0, 1, 3, // first triangle
@@ -87,18 +87,13 @@ int main(void) {
                GL_STATIC_DRAW);
 
   /* Position attribute */
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), NULL);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), NULL);
   glEnableVertexAttribArray(0);
 
-  /* Color attribute */
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+  /* Texture attribute */
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
-
-  /* Texture attribute */
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
 
   /* === Unbind VBO and VAO */
   /* You can unbind the VBO, the call to glVertexAttribPointer registered VBO as
@@ -113,8 +108,6 @@ int main(void) {
   stbi_set_flip_vertically_on_load(1);
   unsigned char *data =
       stbi_load("./assets/container.jpg", &txW, &txH, &nrChannels, 0);
-
-  printf("Width %d, Height %d\n", txW, txH);
 
   if (!data)
     printf("Failed to load texture");
@@ -139,8 +132,6 @@ int main(void) {
   data = stbi_load("./assets/awesomeface.png", &txW, &txH, &nrChannels, 0);
   if (!data)
     printf("Failed to load texture");
-
-  printf("Width %d, Height %d\n", txW, txH);
 
   unsigned int texture2;
   glGenTextures(1, &texture2);
@@ -180,13 +171,26 @@ int main(void) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture2);
 
-    mat4 trans = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(trans, (vec3){0.5f, -0.5f, 0.0f});
-    glm_rotate(trans, (float)glfwGetTime(), (vec3){0.0f, 0.0f, 1.0f});
-
     useShader(shader);
-    unsigned int transformLoc = glGetUniformLocation(shader, "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, (float *)trans);
+
+    /* Create model matrix */
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    glm_rotate(model, glm_rad(-55.0f), (vec3){1.0f, 0.0f, 0.0f});
+    /* Create view matrix */
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
+    /* Create projection matrix */
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_perspective(glm_rad(45.0), 800.0f / 600.0f, 0.1f, 100.0f, projection);
+
+    int modelLoc = glGetUniformLocation(shader, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
+
+    int viewLoc = glGetUniformLocation(shader, "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float *)view);
+
+    int projLoc = glGetUniformLocation(shader, "projection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, (float *)projection);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
