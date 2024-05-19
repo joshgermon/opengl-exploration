@@ -6,9 +6,9 @@
 #include <cglm/cglm.h>
 #include <stdio.h>
 
-float cubeX = 0.5f;
-float cubeY = 1.0f;
-float cubeZ = 0.0f;
+float viewX = 0.0f;
+float viewY = 0.0f;
+float viewZ = -3.0f;
 
 /* Callback to resize viewport on window resize */
 void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
@@ -20,22 +20,22 @@ void processInput(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, 1);
 
   if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    cubeX -= 0.1f;
+    viewX -= 0.1f;
 
   if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    cubeX += 0.1f;
+    viewX += 0.1f;
 
   if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    cubeY += 0.1f;
+    viewY -= 0.1f;
 
   if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    cubeY -= 0.1f;
+    viewY += 0.1f;
 
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    cubeZ -= 0.1f;
+    if(viewZ > -3.0) viewZ -= 0.1f;
 
   if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-    cubeZ += 0.1f;
+    viewZ += 0.1f;
 }
 
 int main(void) {
@@ -161,7 +161,7 @@ int main(void) {
 
   stbi_image_free(data);
 
-  data = stbi_load("./assets/pizza.png", &txW, &txH, &nrChannels, 0);
+  data = stbi_load("./assets/awesomeface.png", &txW, &txH, &nrChannels, 0);
   if (!data)
     printf("Failed to load texture");
 
@@ -177,7 +177,7 @@ int main(void) {
                   GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txW, txH, 0, GL_RGB, GL_UNSIGNED_BYTE,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txW, txH, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                data);
   glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -190,25 +190,28 @@ int main(void) {
   shaderSetInt(shader, "texture2", 1);
 
   // Setup all our CUBES
-//   vec3 cubePositions[] = {
-//     (vec3){ 0.0f,  0.0f,  0.0f},
-//     (vec3){ 2.0f,  5.0f, -15.0f},
-//     (vec3){-1.5f, -2.2f, -2.5f},
-//     (vec3){-3.8f, -2.0f, -12.3f},
-//     (vec3){ 2.4f, -0.4f, -3.5f},
-//     (vec3){-1.7f,  3.0f, -7.5f},
-//     (vec3){ 1.3f, -2.0f, -2.5f},
-//     (vec3){ 1.5f,  2.0f, -2.5f},
-//     (vec3){ 1.5f,  0.2f, -1.5f},
-//     (vec3){-1.3f,  1.0f, -1.5f}
-// };
-//
+    vec3 viewPositions[] = {
+        {0.0f,  0.0f,  0.0f},
+        {2.0f,  5.0f, -15.0f},
+        {-1.5f, -2.2f, -2.5f},
+        {-3.8f, -2.0f, -12.3f},
+        {2.4f, -0.4f, -3.5f},
+        {-1.7f,  3.0f, -7.5f},
+        {1.3f, -2.0f, -2.5f},
+        {1.5f,  2.0f, -2.5f},
+        {1.5f,  0.2f, -1.5f},
+        {-1.3f,  1.0f, -1.5f}
+    };
+
+
+
+
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
 
     /* Render here */
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Draw */
@@ -219,20 +222,12 @@ int main(void) {
 
     useShader(shader);
 
-    /* Create model matrix */
-    mat4 model = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(model, (vec3){cubeX, cubeY, cubeZ});
-    glm_rotate(model, (float)glfwGetTime() * glm_rad(50.0f),
-               (vec3){0.5f, 1.0f, 0.0f});
     /* Create view matrix */
     mat4 view = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
+    glm_translate(view, (vec3){viewX, viewY, viewZ});
     /* Create projection matrix */
     mat4 projection = GLM_MAT4_IDENTITY_INIT;
-    glm_perspective(glm_rad(45.0), 400.0f / 300.0f, 0.1f, 100.0f, projection);
-
-    int modelLoc = glGetUniformLocation(shader, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
+    glm_perspective(glm_rad(45.0), 800.0f / 600.0f, 0.1f, 100.0f, projection);
 
     int viewLoc = glGetUniformLocation(shader, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float *)view);
@@ -242,7 +237,16 @@ int main(void) {
 
     glBindVertexArray(VAO);
     // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    for(unsigned int i =0; i < 10; i++) {
+      mat4 model = GLM_MAT4_IDENTITY_INIT;
+      glm_translate(model, viewPositions[i]);
+      float angle = 20.0f * (i + 1);
+      glm_rotate(model, glfwGetTime() * glm_rad(angle), (vec3){1.0f, 0.3f, 0.5f});
+
+      int modelLoc = glGetUniformLocation(shader, "model");
+      glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
